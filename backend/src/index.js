@@ -20,10 +20,11 @@ const PORT = process.env.PORT || 5000;
 
 // CORS configuration
 const whitelist = [
-  'https://myfrontend.com',  // your deployed frontend
-  'http://localhost:3000',   // for local dev
-  'http://localhost:8080'    // optional extra dev port
+  'https://rizz-front.onrender.com',  // your deployed frontend
+  'http://localhost:3000',             // for local dev
+  'http://localhost:8080'              // optional extra dev port
 ];
+
 
 const corsOptions = {
   origin: function (origin, callback) {
