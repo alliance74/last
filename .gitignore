@@ -1,0 +1,34 @@
+node_modules/
+.env
+.DS_Store
+coverage/
+.vscode/
+*.log
+
+# Firebase
+firebase-service-account.json
+*/**/service-account.json
+**/config/service-account.json
+
+# Environment files
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Build output
+dist/
+build/
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDE specific files
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
