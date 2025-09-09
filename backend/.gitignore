@@ -6,6 +6,12 @@ config/service-account.json
 
 # Dependencies
 node_modules/
+# Firebase
+firebase-service-account.json
+*/**/service-account.json
+**/config/service-account.json
+**/rizzchatt-*-firebase-adminsdk-*.json
+
 
 # Logs
 logs
