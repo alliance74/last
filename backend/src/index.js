@@ -19,9 +19,11 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // CORS configuration
-const whitelist = process.env.NODE_ENV === 'production'
-  ? (process.env.FRONTEND_URL || '').split(',').map(url => url.trim())
-  : ['http://localhost:3000', 'http://localhost:8080'];
+const whitelist = [
+  'https://myfrontend.com',  // your deployed frontend
+  'http://localhost:3000',   // for local dev
+  'http://localhost:8080'    // optional extra dev port
+];
 
 const corsOptions = {
   origin: function (origin, callback) {
