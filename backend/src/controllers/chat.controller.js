@@ -110,6 +110,7 @@ const styleMap = {
 };
 
 /** Send a chat message */
+/** Send a chat message */
 const sendMessage = async (req, res, next) => {
   try {
     const { message, style = "Confident", imageBase64, imageType } = req.body;
@@ -130,7 +131,6 @@ const sendMessage = async (req, res, next) => {
       });
     }
 
-    // Combine core + style prompt with analysis emphasis
     const selectedStyle = styleMap[style] || "confident";
     const systemPrompt = `
 ${rizzGPTCorePrompt}
@@ -179,7 +179,7 @@ ${stylePrompts[selectedStyle]}
     }
 
     const remainingAfter = await recordMessageUsage(userId);
-    const timestamp = admin.firestore.FieldValue.serverTimestamp();
+    const timestamp = new Date(); // ✅ Use JS Date here
 
     const userMessage = {
       id: generateId(),
@@ -191,7 +191,10 @@ ${stylePrompts[selectedStyle]}
     const aiMessage = { id: generateId(), content: aiText, role: "ai", timestamp };
 
     const userDocRef = db.collection("messages").doc(userId);
-    await userDocRef.set({ messages: admin.firestore.FieldValue.arrayUnion(userMessage, aiMessage) }, { merge: true });
+    await userDocRef.set(
+      { messages: admin.firestore.FieldValue.arrayUnion(userMessage, aiMessage) },
+      { merge: true }
+    );
 
     const planInfo = await getUserPlanInfo(userId);
 
