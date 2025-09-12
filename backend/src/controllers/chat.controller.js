@@ -117,7 +117,11 @@ const sendMessage = async (req, res, next) => {
     const userId = req.user.uid;
 
     if ((!message || !message.trim()) && !imageBase64) {
-      return res.status(400).json({ success: false, message: "Message or image is required", code: "MISSING_MESSAGE" });
+      return res.status(400).json({
+        success: false,
+        message: "Message or image is required",
+        code: "MISSING_MESSAGE"
+      });
     }
 
     const canSend = await canSendMessage(userId);
@@ -156,12 +160,7 @@ ${stylePrompts[selectedStyle]}
           "Content-Type": "application/json",
           Authorization: `Bearer ${process.env.OPENAI_API_KEY}`
         },
-        body: JSON.stringify({ 
-          model, 
-          messages: openAiMessages, 
-          temperature: 0.9, 
-          max_tokens: 300 
-        })
+        body: JSON.stringify({ model, messages: openAiMessages, temperature: 0.9, max_tokens: 300 })
       });
 
       if (!resp.ok) {
@@ -171,31 +170,35 @@ ${stylePrompts[selectedStyle]}
       }
 
       const data = await resp.json();
-      aiText = (data.choices?.[0]?.message?.content || "").trim() || 
+      aiText = (data.choices?.[0]?.message?.content || "").trim() ||
         "Yo, I'm your rizz coach! I only help with dating game and smooth conversation. What romantic situation can I help you navigate? 😏✨";
+
     } catch (err) {
       console.error("OpenAI call failed:", err);
       return res.status(503).json({ success: false, message: "AI service error", code: "AI_UNAVAILABLE" });
     }
 
-    const remainingAfter = await recordMessageUsage(userId);
-    const timestamp = new Date(); // ✅ Use JS Date here
+    // Use Firestore timestamp
+    const timestamp = admin.firestore.Timestamp.fromDate(new Date());
 
+    // Only include image if fully defined
     const userMessage = {
       id: generateId(),
       content: message || "[image sent]",
       role: "user",
       timestamp,
-      image: imageBase64 ? { base64: imageBase64, type: imageType } : undefined
+      ...(imageBase64 && imageType ? { image: { base64: imageBase64, type: imageType } } : {})
     };
+
     const aiMessage = { id: generateId(), content: aiText, role: "ai", timestamp };
 
+    // Save messages
     const userDocRef = db.collection("messages").doc(userId);
-    await userDocRef.set(
-      { messages: admin.firestore.FieldValue.arrayUnion(userMessage, aiMessage) },
-      { merge: true }
-    );
+    await userDocRef.set({
+      messages: admin.firestore.FieldValue.arrayUnion(userMessage, aiMessage)
+    }, { merge: true });
 
+    const remainingAfter = await recordMessageUsage(userId);
     const planInfo = await getUserPlanInfo(userId);
 
     res.json({ success: true, message: aiText, usage: { remaining: remainingAfter, limit: planInfo.maxMessages } });
@@ -205,6 +208,7 @@ ${stylePrompts[selectedStyle]}
     next(error);
   }
 };
+
 
 /** Get chat history */
 const getChatHistory = async (req, res) => {
